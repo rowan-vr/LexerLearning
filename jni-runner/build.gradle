@@ -3,8 +3,13 @@ plugins {
   id 'application'
 }
 
+repositories {
+  mavenCentral()
+}
+
 dependencies {
   implementation project(':jni-lib')
+  implementation "de.learnlib.distribution:learnlib-distribution:0.17.0"
 }
 
 application {

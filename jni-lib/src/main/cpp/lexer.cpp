@@ -4,6 +4,7 @@
 #include <streambuf>
 #include <iostream>
 
+bool locked = false;
 
 
 //void *runLexer(void *arg) {
@@ -33,12 +34,7 @@
  * Signature: (Ljava/lang/String;)Ljava/lang/String;
  */
 JNIEXPORT jobject JNICALL Java_jni_Lexer_lex
-        (JNIEnv *env, jobject obj, jstring javaString, jboolean jshouldTerminate) {
-    if (jshouldTerminate == JNI_TRUE) {
-        should_terminate = 1;
-    } else {
-        should_terminate = 0;
-    }
+        (JNIEnv *env, jobject obj, jstring javaString) {
 
     const char *nativeString = env->GetStringUTFChars(javaString, 0);
     yyin = fmemopen((void *) nativeString, strlen(nativeString), "r");
@@ -66,7 +62,8 @@ JNIEXPORT jobject JNICALL Java_jni_Lexer_lex
         // Create new instance of the jni.Token class
         jclass tokenClass = env->FindClass("jni/Token");
         jmethodID constructor = env->GetMethodID(tokenClass, "<init>", "(ILjava/lang/String;I)V");
-        jobject token = env->NewObject(tokenClass, constructor, current_token.token, current_token.lexeme,
+        std::cout << current_token.lexeme << std::endl;
+        jobject token = env->NewObject(tokenClass, constructor, current_token.token, env->NewStringUTF(current_token.lexeme),
                                        current_token.line);
         return token;
     }
@@ -81,6 +78,12 @@ JNIEXPORT jobject JNICALL Java_jni_Lexer_lex
  */
 JNIEXPORT jobject JNICALL Java_jni_Lexer_create
         (JNIEnv *env, jclass cls) {
+    if (locked) {
+        jclass exClass = env->FindClass("java/lang/IllegalStateException");
+        return reinterpret_cast<jobject>(env->ThrowNew(exClass, "Cannot intialize multiple lexers at once!"));
+    }
+    locked = true;
+
     jmethodID constructor = env->GetMethodID(cls, "<init>", "()V");
     jobject obj = env->NewObject(cls, constructor);
 
@@ -120,4 +123,11 @@ JNIEXPORT jobject JNICALL Java_jni_Lexer_currentToken
 
     return nullptr;
 };
+
+JNIEXPORT void JNICALL Java_jni_Lexer_close
+  (JNIEnv *env, jobject obj) {
+    yylex_destroy();
+    locked = false;
+};
+
 

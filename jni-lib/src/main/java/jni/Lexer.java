@@ -7,9 +7,11 @@ public class Lexer {
     }
     public native static Lexer create();
 
+    public native void close();
+
     private boolean terminated = false;
 
-    public native Token lex(String input, boolean shouldTerminate);
+    public native Token lex(String input);
 
     public native Token currentToken();
 
