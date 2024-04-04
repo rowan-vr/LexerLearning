@@ -36,12 +36,13 @@ public class Runner {
     public static void main(String[] args) throws Exception {
         LexerDriver driver = new LexerDriver();
 
-        LexerInput iString = driver.addSymbol("a");
-        LexerInput iCommentStart = driver.addSymbol("/");
-        LexerInput iCommentEnd = driver.addSymbol("*");
+        for (char c = 32; c <= 126; c++) {
+            driver.addSymbol(String.valueOf(c));
+        }
+        driver.addSymbol("\n");
 
         // add token dictionary
-        LexerInput.tokenDict.put(0, "COMMENT");
+        LexerInput.tokenDict.put(2, "COMMENT");
         LexerInput.tokenDict.put(1, "CODE");
 
         // oracle for counting queries wraps sul
@@ -56,9 +57,7 @@ public class Runner {
 
         // create initial set of suffixes
         List<Word<LexerInput>> suffixes = new ArrayList<>();
-        suffixes.add(Word.fromSymbols(iString));
-        suffixes.add(Word.fromSymbols(iCommentEnd));
-        suffixes.add(Word.fromSymbols(iCommentStart));
+        driver.symbols.forEach(s -> suffixes.add(Word.fromSymbols(s)));
 
         // construct L* instance (almost classic Mealy version)
         // almost: we use words (Word<String>) in cells of the table
@@ -151,8 +150,10 @@ public class Runner {
 
         @Override
         public String execute(Lexer lexer) {
-            int token = lexer.lex(symbol);
-            return tokenDict.getOrDefault(token, String.valueOf(token));
+            Token token = lexer.lex(symbol);
+            if (token == null)
+                return null;
+            return tokenDict.getOrDefault(token.token(), String.valueOf(token.token()));
         }
 
         @Override

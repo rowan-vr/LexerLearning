@@ -1,8 +1,5 @@
 package jni;
 
-import java.io.*;
-import java.util.concurrent.CompletableFuture;
-
 public class Lexer {
     static {
         if (!LibraryLoader.load(Lexer.class, "lexer"))
@@ -12,48 +9,19 @@ public class Lexer {
 
     public native void close();
 
-    public native void run();
-
-    public CompletableFuture<Void> runAsync() {
-        return CompletableFuture.runAsync(this::run);
-    }
-
     private boolean terminated = false;
-    private boolean ready = false;
 
-    void waitReady() {
-        while (!ready) {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
+    private StringBuffer input = new StringBuffer();
+
+    public Token lex(String input) {
+        this.input.append(input);
+        Token token = internalLex(this.input.toString());
+        return token;
     }
 
-    public int lex(String input){
-        if (terminated)
-            throw new IllegalStateException("Lexer is terminated!");
+    private native Token internalLex(String input);
 
-        if (!ready)
-            throw new IllegalStateException("Lexer is not ready!");
-
-
-        File file = new File("/tmp/lex");
-        // write input to file
-
-        try {
-            OutputStream os = new FileOutputStream(file);
-            os.write(input.getBytes());
-            os.close();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-        return 0;
-    }
-
-    public native Integer currentToken();
+    public native Token currentToken();
 
     public boolean isTerminated() {
         return terminated;

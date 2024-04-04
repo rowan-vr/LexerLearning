@@ -43,19 +43,19 @@ int current_token_status = NOT_PRESENT;
 %%
 
  /* Switch to comments on '/*' */
-<INITIAL>"/*"      { COMM ; BEGIN(INCOMMENT) ; }
-<INCOMMENT>"*/"    { COMM ; BEGIN(INITIAL) ; }
+<INITIAL>"/*"      {  BEGIN(INCOMMENT) ;COMM ; }
+<INCOMMENT>"*/"    {  BEGIN(INITIAL) ;  COMM ;}
 <INCOMMENT>.|\n    { COMM ; }
 
  /* Switch to string mode on '"' */
-<INITIAL>\"      { CODE ; BEGIN(INSTRING) ; }
+<INITIAL>\"      {  BEGIN(INSTRING) ; CODE ;}
 <INSTRING>\\\"   { CODE ; } /* Escaped quote. */
-<INSTRING>\"     { CODE ; BEGIN(INITIAL) ; }
+<INSTRING>\"     {  BEGIN(INITIAL) ; CODE ;}
 <INSTRING>.|\n   { CODE ; }
 
 <INITIAL>['](\\)?\"['] { CODE ; } /* Character quote. */
 <INITIAL>.|\n          { CODE ; }
 
-<<EOF>>   {printf("EOF") ;return 0 ; }
+<<EOF>>   {return 0 ; }
 
 %%
