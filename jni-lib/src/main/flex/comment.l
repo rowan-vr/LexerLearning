@@ -30,8 +30,8 @@ enum CurrentTokenStatus {
 int current_token_status = NOT_PRESENT;
 
 #define VALUE {strdup(yytext)}
-#define CODE {code += strlen(yytext); current_token = {CODE, VALUE, yylineno}; current_token_status = PRESENT;}
-#define COMM {comm += strlen(yytext); current_token = {COMMENT, VALUE, yylineno}; current_token_status = PRESENT;}
+#define CODE {return 1;}
+#define COMM {return 2;}
 
 %}
 
@@ -56,6 +56,6 @@ int current_token_status = NOT_PRESENT;
 <INITIAL>['](\\)?\"['] { CODE ; } /* Character quote. */
 <INITIAL>.|\n          { CODE ; }
 
-<<EOF>>   { return 0 ; }
+<<EOF>>   {printf("EOF") ;return 0 ; }
 
 %%

@@ -3,73 +3,84 @@
 #include <sstream>
 #include <streambuf>
 #include <iostream>
+//#include <pthread.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <fstream>
 
 bool locked = false;
+bool stopped = false;
+bool ready = false;
+int token = -1;
 
 
-//void *runLexer(void *arg) {
-//    // Step 1: Allocate a buffer
-//    size_t bufferSize = 1024; // adjust size as needed
-//    char *buffer = new char[bufferSize];
-//    // Step 2: Create a FILE* stream
-//    yyin = fmemopen(buffer, bufferSize, "a+");
-//    if (yyin == NULL) {
-//        perror("fmemopen failed");
-//        return nullptr;
-//    }
-//
-////    yyin = fmemopen((void*)"", 0, "r");
-//
-//    // Run the lexer
-//    const int lex_ret = yylex();
-//
-//    fclose(yyin);
-//
-//    return nullptr;
-//}
+JNIEXPORT void JNICALL Java_jni_Lexer_run
+  (JNIEnv *env, jobject obj){
+    printf("Java_jni_Lexer_run");
+
+    // Step 1: Allocate a buffer
+    while (!stopped) {
+        if (!mkfifo("/tmp/lex", 0666)) {
+            perror("mkfifo failed");
+            return;
+        }
+
+        printf("Created Pipe");
+
+        yyin = fopen("/tmp/lex", "r");
+
+        printf("Running lexer\n");
+        ready = true;
+
+        // change ready on lexer_obj
+        jclass cls = env->GetObjectClass(obj);
+        jfieldID field = env->GetFieldID(cls, "ready", "Z");
+        env->SetBooleanField(obj, field, ready);
+
+        // Run the lexer
+        token = yylex();
+
+        ready = false;
+        // change ready on lexer_obj
+        env->SetBooleanField(obj, field, ready);
+
+        fclose(yyin);
+    }
+
+    return;
+}
 
 /*
  * Class:     dev_rvr_lexerlearning_lexer_Lexer
  * Method:    lex
  * Signature: (Ljava/lang/String;)Ljava/lang/String;
  */
-JNIEXPORT jobject JNICALL Java_jni_Lexer_lex
-        (JNIEnv *env, jobject obj, jstring javaString) {
-
-    const char *nativeString = env->GetStringUTFChars(javaString, 0);
-    yyin = fmemopen((void *) nativeString, strlen(nativeString), "r");
-//    std::string str(nativeString);
-//    str.push_back('\0'); // add null character at the end
-//    if (fputs(str.c_str(), yyin) == EOF) {
-//        perror("fputs failed");
-//        return nullptr;
+//JNIEXPORT jobject JNICALL Java_jni_Lexer_lex
+//        (JNIEnv *env, jobject obj, jstring javaString) {
+//
+//    const char *nativeString = env->GetStringUTFChars(javaString, 0);
+//
+//    std::ofstream file;
+//    file.open("/tmp/lex", std::ios::binary);
+//    file << nativeString;
+//    file.close();
+//
+//    if (token != -1) {
+//        std::stringstream ss;
+//        ss << token;
+//        std::string token_str = ss.str();
+//        // create Integer object
+//        jclass integerClass = env->FindClass("java/lang/Integer");
+//        jmethodID constructor = env->GetMethodID(integerClass, "<init>", "(Ljava/lang/String;)V");
+//        jobject token_obj = env->NewObject(integerClass, constructor, token);
+//        token = -1;
+//        return token_obj;
 //    }
-
-    const int lex_ret = yylex();
-
-    fclose(yyin);
-
-
-    if (lex_ret == 0) {
-        // Set the ended true if the lexer has ended on the obj
-        jclass cls = env->GetObjectClass(obj);
-        jfieldID endedField = env->GetFieldID(cls, "terminated", "Z");
-        env->SetBooleanField(obj, endedField, true);
-    }
-
-    // check if current token is defined
-    if (current_token_status == PRESENT) {
-        // Create new instance of the jni.Token class
-        jclass tokenClass = env->FindClass("jni/Token");
-        jmethodID constructor = env->GetMethodID(tokenClass, "<init>", "(ILjava/lang/String;I)V");
-        std::cout << current_token.lexeme << std::endl;
-        jobject token = env->NewObject(tokenClass, constructor, current_token.token, env->NewStringUTF(current_token.lexeme),
-                                       current_token.line);
-        return token;
-    }
-
-    return nullptr;
-};
+//
+//    return nullptr;
+//};
 
 /*
  * Class:     dev_rvr_lexerlearning_lexer_Lexer
@@ -87,20 +98,6 @@ JNIEXPORT jobject JNICALL Java_jni_Lexer_create
     jmethodID constructor = env->GetMethodID(cls, "<init>", "()V");
     jobject obj = env->NewObject(cls, constructor);
 
-    size_t bufferSize = 1024; // adjust size as needed
-    char *buffer = new char[bufferSize];
-    // Step 2: Create a FILE* stream
-    yyin = fmemopen(buffer, bufferSize, "a+");
-    if (yyin == NULL) {
-        perror("fmemopen failed");
-        return nullptr;
-    }
-
-    // Create new thread for the lexer
-//    pthread_t lexer_thread;
-////    const char *nativeString = env->GetStringUTFChars(javaString, 0);
-//    pthread_create(&lexer_thread, nullptr, runLexer, nullptr);
-
     return obj;
 };
 
@@ -112,20 +109,25 @@ JNIEXPORT jobject JNICALL Java_jni_Lexer_create
 JNIEXPORT jobject JNICALL Java_jni_Lexer_currentToken
         (JNIEnv *env, jobject obj) {
 
-    if (current_token_status == PRESENT) {
-        // Create new instance of the jni.Token class
-        jclass tokenClass = env->FindClass("jni/Token");
-        jmethodID constructor = env->GetMethodID(tokenClass, "<init>", "(ILjava/lang/String;I)V");
-        jobject token = env->NewObject(tokenClass, constructor, current_token.token, current_token.lexeme,
-                                       current_token.line);
-        return token;
+    if (token != -1) {
+        std::stringstream ss;
+        ss << token;
+        std::string token_str = ss.str();
+        // create Integer object
+        jclass integerClass = env->FindClass("java/lang/Integer");
+        jmethodID constructor = env->GetMethodID(integerClass, "<init>", "(Ljava/lang/String;)V");
+        jobject token_obj = env->NewObject(integerClass, constructor, token);
+        token = -1;
+        return token_obj;
     }
 
     return nullptr;
 };
 
 JNIEXPORT void JNICALL Java_jni_Lexer_close
-  (JNIEnv *env, jobject obj) {
+        (JNIEnv *env, jobject obj) {
+    stopped = true;
+    fclose(yyin);
     yylex_destroy();
     locked = false;
 };

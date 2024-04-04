@@ -37,8 +37,8 @@ public class Runner {
         LexerDriver driver = new LexerDriver();
 
         LexerInput iString = driver.addSymbol("a");
-        LexerInput iCommentStart = driver.addSymbol("/*");
-        LexerInput iCommentEnd = driver.addSymbol("*/");
+        LexerInput iCommentStart = driver.addSymbol("/");
+        LexerInput iCommentEnd = driver.addSymbol("*");
 
         // add token dictionary
         LexerInput.tokenDict.put(0, "COMMENT");
@@ -151,7 +151,7 @@ public class Runner {
 
         @Override
         public String execute(Lexer lexer) {
-            int token = lexer.lex(symbol).token();
+            int token = lexer.lex(symbol);
             return tokenDict.getOrDefault(token, String.valueOf(token));
         }
 
