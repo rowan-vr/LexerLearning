@@ -26,9 +26,9 @@ compileJava {
 
 task generateLexer {
   doLast {
-    exec {
-      commandLine 'flex', '-l', '-o', 'src/main/include/lex.yy.c', *(fileTree('src/main/flex')*.absolutePath).toArray()
-    }
+//    exec {
+//      commandLine 'flex', '-l', '-o', 'src/main/include/lex.yy.c', *(fileTree('src/main/flex')*.absolutePath).toArray()
+//    }
   }
 }
 

@@ -5,11 +5,10 @@ public class Lexer {
         if (!LibraryLoader.load(Lexer.class, "lexer"))
             System.loadLibrary("lexer");
     }
+
     public native static Lexer create();
 
     public native void close();
-
-    private boolean terminated = false;
 
     private StringBuffer input = new StringBuffer();
 
@@ -23,7 +22,4 @@ public class Lexer {
 
     public native Token currentToken();
 
-    public boolean isTerminated() {
-        return terminated;
-    }
 }

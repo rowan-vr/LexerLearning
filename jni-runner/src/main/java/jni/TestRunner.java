@@ -11,5 +11,6 @@ public class TestRunner {
         System.out.println(lexer.lex(":"));
         System.out.println(lexer.lex("\n"));
         System.out.println(lexer.lex("a"));
+        lexer.close();
     }
 }
