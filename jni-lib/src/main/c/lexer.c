@@ -47,6 +47,6 @@ JNIEXPORT jint JNICALL Java_jni_Lexer_lex
         (JNIEnv *env, jobject obj, jchar jchar){
     char c = (char) jchar;
     int token = lex_one_char(cookie, c);
-    printf("(char,token): (%c,%d)\n", c, token);
+//    printf("(char,token): (%c,%d)\n", c, token);
     return token;
 };

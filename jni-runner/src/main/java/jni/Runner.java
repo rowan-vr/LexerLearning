@@ -25,8 +25,8 @@ import java.util.*;
 
 public class Runner {
 
-    private static final double RESET_PROBABILITY = 0.01;
-    private static final int MAX_STEPS = 10;
+    private static final double RESET_PROBABILITY = 0.05;
+    private static final int MAX_STEPS = 3;
     private static final int RANDOM_SEED = 46_346_293;
 
     public static void main(String[] args) throws Exception {
@@ -41,6 +41,7 @@ public class Runner {
         driver.addSymbol(' ');
         driver.addSymbol('1');
         driver.addSymbol('\n');
+        driver.addSymbol((char) -1);
 
 //        // add token dictionary
 //        LexerInput.tokenDict.put(2, "COMMENT");
@@ -151,7 +152,10 @@ public class Runner {
 
         @Override
         public String execute(Lexer lexer) {
+            // print the thread
+            System.out.println("["+ Thread.currentThread().getId() + "] LEX: " + symbol + " (" + (int) symbol + ")");
             int token = lexer.lex(symbol);
+            System.out.println("["+ Thread.currentThread().getId() + "] TOKEN: " + token);
             return tokenDict.getOrDefault(token, String.valueOf(token));
         }
 
