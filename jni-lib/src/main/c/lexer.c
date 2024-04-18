@@ -2,7 +2,7 @@
 #include "test.c"
 #include "test.h"
 
-struct lex_state *cookie;
+struct lex_state *cookie = NULL;
 
 /*
  * Class:     jni_Lexer
@@ -11,11 +11,17 @@ struct lex_state *cookie;
  */
 JNIEXPORT jobject JNICALL Java_jni_Lexer_create
         (JNIEnv *env, jclass lexerClass) {
+    if (cookie != NULL) {
+        // throw IllegalStateException
+        jclass exceptionClass = (*env)->FindClass(env, "java/lang/IllegalStateException");
+        (*env)->ThrowNew(env, exceptionClass, "Lexer already created");
+        return NULL;
+    }
+
     cookie = lexer_setup();
     // Create a new Lexer object
     jmethodID constructor = (*env)->GetMethodID(env, lexerClass, "<init>", "()V");
     jobject lexer = (*env)->NewObject(env, lexerClass, constructor);
-    printf("created lexer");
 
     return lexer;
 };
@@ -29,6 +35,7 @@ JNIEXPORT void JNICALL Java_jni_Lexer_close
         (JNIEnv *env, jobject jobj) {
 
     lexer_destroy(cookie);
+    cookie = NULL;
 };
 
 /*
@@ -36,18 +43,10 @@ JNIEXPORT void JNICALL Java_jni_Lexer_close
  * Method:    internalLex
  * Signature: (Ljava/lang/String;)Ljni/Token;
  */
-JNIEXPORT jobject JNICALL Java_jni_Lexer_internalLex
-        (JNIEnv *, jobject, jstring) {
-    return  NULL;
-};
-
-/*
- * Class:     jni_Lexer
- * Method:    currentToken
- * Signature: ()Ljni/Token;
- */
-JNIEXPORT jobject JNICALL Java_jni_Lexer_currentToken
-        (JNIEnv *, jobject)
-{
-    return NULL;
+JNIEXPORT jint JNICALL Java_jni_Lexer_lex
+        (JNIEnv *env, jobject obj, jchar jchar){
+    char c = (char) jchar;
+    int token = lex_one_char(cookie, c);
+    printf("(char,token): (%c,%d)\n", c, token);
+    return token;
 };

@@ -3,9 +3,6 @@ package jni;
 import de.learnlib.algorithm.LearningAlgorithm.MealyLearner;
 import de.learnlib.algorithm.lstar.mealy.ExtensibleLStarMealyBuilder;
 import de.learnlib.driver.ContextExecutableInputSUL;
-import de.learnlib.driver.reflect.MethodInput;
-import de.learnlib.driver.reflect.MethodOutput;
-import de.learnlib.driver.reflect.SimplePOJOTestDriver;
 import de.learnlib.filter.cache.sul.SULCaches;
 import de.learnlib.filter.statistic.sul.ResetCounterSUL;
 import de.learnlib.oracle.EquivalenceOracle.MealyEquivalenceOracle;
@@ -24,26 +21,30 @@ import net.automatalib.serialization.dot.GraphDOT;
 import net.automatalib.visualization.Visualization;
 import net.automatalib.word.Word;
 
-import java.lang.reflect.Method;
 import java.util.*;
 
 public class Runner {
 
-    private static final double RESET_PROBABILITY = 0.05;
-    private static final int MAX_STEPS = 10_000;
+    private static final double RESET_PROBABILITY = 0.01;
+    private static final int MAX_STEPS = 10;
     private static final int RANDOM_SEED = 46_346_293;
 
     public static void main(String[] args) throws Exception {
         LexerDriver driver = new LexerDriver();
 
-        for (char c = 32; c <= 126; c++) {
-            driver.addSymbol(String.valueOf(c));
-        }
-        driver.addSymbol("\n");
+//        for (char c = 32; c <= 126; c++) {
+//            driver.addSymbol(c);
+//        }
+//        driver.addSymbol('\n');
 
-        // add token dictionary
-        LexerInput.tokenDict.put(2, "COMMENT");
-        LexerInput.tokenDict.put(1, "CODE");
+        driver.addSymbol('a');
+        driver.addSymbol(' ');
+        driver.addSymbol('1');
+        driver.addSymbol('\n');
+
+//        // add token dictionary
+//        LexerInput.tokenDict.put(2, "COMMENT");
+//        LexerInput.tokenDict.put(1, "CODE");
 
         // oracle for counting queries wraps sul
         StatisticSUL<LexerInput, String> statisticSul =
@@ -132,7 +133,7 @@ public class Runner {
             return Alphabets.fromList(symbols);
         }
 
-        public LexerInput addSymbol(String symbol) {
+        public LexerInput addSymbol(Character symbol) {
             LexerInput input = new LexerInput(symbol);
             symbols.add(input);
             return input;
@@ -142,23 +143,21 @@ public class Runner {
     static class LexerInput implements ContextExecutableInput<String, Lexer> {
         public static Map<Integer, String> tokenDict = new HashMap<Integer, String>();
 
-        private final String symbol;
+        private final Character symbol;
 
-        public LexerInput(String symbol) {
+        public LexerInput(Character symbol) {
             this.symbol = symbol;
         }
 
         @Override
         public String execute(Lexer lexer) {
-            Token token = lexer.lex(symbol);
-            if (token == null)
-                return null;
-            return tokenDict.getOrDefault(token.token(), String.valueOf(token.token()));
+            int token = lexer.lex(symbol);
+            return tokenDict.getOrDefault(token, String.valueOf(token));
         }
 
         @Override
         public String toString() {
-            return symbol;
+            return String.valueOf(symbol);
         }
     }
 

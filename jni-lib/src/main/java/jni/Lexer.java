@@ -10,16 +10,5 @@ public class Lexer {
 
     public native void close();
 
-    private StringBuffer input = new StringBuffer();
-
-    public Token lex(String input) {
-        this.input.append(input);
-        Token token = internalLex(this.input.toString());
-        return token;
-    }
-
-    private native Token internalLex(String input);
-
-    public native Token currentToken();
-
+    public native int lex(char input);
 }
