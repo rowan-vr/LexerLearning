@@ -4,7 +4,7 @@ public class TestRunner {
     public static void main(String[] args) {
         Lexer lexer = Lexer.create();
         System.out.println("Lexer: " + lexer);
-        String input = "abc\n123a";
+        String input = "a1a";
         for (int i = 0; i < input.length(); i++) {
             char symbol = input.charAt(i);
             int token = lexer.lex(symbol);

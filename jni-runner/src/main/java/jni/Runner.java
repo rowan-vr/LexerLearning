@@ -41,7 +41,9 @@ public class Runner {
         driver.addSymbol(' ');
         driver.addSymbol('1');
         driver.addSymbol('\n');
-        driver.addSymbol((char) -1);
+//        driver.addSymbol((char) -1);// EOF
+
+LexerInput.tokenDict.put(1, "NO TOKEN");
 
 //        // add token dictionary
 //        LexerInput.tokenDict.put(2, "COMMENT");

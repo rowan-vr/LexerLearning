@@ -824,7 +824,7 @@ static int input ( yyscan_t yyscanner );
 		{ \
 		int c = '*'; \
 		int n; \
-		for ( n = 0; n < max_size && \
+		for ( n = 0; n < 1 && \
 			     (c = getc( yyin )) != EOF && c != '\n'; ++n ) \
 			buf[n] = (char) c; \
 		if ( c == '\n' ) \

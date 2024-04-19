@@ -23,6 +23,8 @@ JNIEXPORT jobject JNICALL Java_jni_Lexer_create
     jmethodID constructor = (*env)->GetMethodID(env, lexerClass, "<init>", "()V");
     jobject lexer = (*env)->NewObject(env, lexerClass, constructor);
 
+	fprintf(stderr, "Lexer Created\n");
+
     return lexer;
 };
 
@@ -33,8 +35,9 @@ JNIEXPORT jobject JNICALL Java_jni_Lexer_create
  */
 JNIEXPORT void JNICALL Java_jni_Lexer_close
         (JNIEnv *env, jobject jobj) {
-
+    lex_one_char(cookie, EOF);
     lexer_destroy(cookie);
+	fprintf(stderr, "Lexer Destroyed\n");
     cookie = NULL;
 };
 
