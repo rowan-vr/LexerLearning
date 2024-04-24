@@ -23,8 +23,6 @@ JNIEXPORT jobject JNICALL Java_jni_Lexer_create
     jmethodID constructor = (*env)->GetMethodID(env, lexerClass, "<init>", "()V");
     jobject lexer = (*env)->NewObject(env, lexerClass, constructor);
 
-	fprintf(stderr, "Lexer Created\n");
-
     return lexer;
 };
 
@@ -37,7 +35,6 @@ JNIEXPORT void JNICALL Java_jni_Lexer_close
         (JNIEnv *env, jobject jobj) {
     lex_one_char(cookie, EOF);
     lexer_destroy(cookie);
-	fprintf(stderr, "Lexer Destroyed\n");
     cookie = NULL;
 };
 
@@ -46,10 +43,19 @@ JNIEXPORT void JNICALL Java_jni_Lexer_close
  * Method:    internalLex
  * Signature: (Ljava/lang/String;)Ljni/Token;
  */
-JNIEXPORT jint JNICALL Java_jni_Lexer_lex
+JNIEXPORT jobject JNICALL Java_jni_Lexer_lex
         (JNIEnv *env, jobject obj, jchar jchar){
     char c = (char) jchar;
-    int token = lex_one_char(cookie, c);
-//    printf("(char,token): (%c,%d)\n", c, token);
+    struct Tokens tokens = lex_one_char(cookie, c);
+
+    // Find the Tokens class
+    jclass tokensClass = (*env)->FindClass(env, "jni/Tokens");
+
+    // Find the constructor that takes two integers
+    jmethodID constructor = (*env)->GetMethodID(env, tokensClass, "<init>", "(II)V");
+
+    // Create a new Tokens object
+    jobject token = (*env)->NewObject(env, tokensClass, constructor, tokens.first, tokens.second);
+
     return token;
 };

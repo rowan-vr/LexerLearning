@@ -10,5 +10,5 @@ public class Lexer {
 
     public native void close();
 
-    public native int lex(char input);
+    public native Tokens lex(char input);
 }

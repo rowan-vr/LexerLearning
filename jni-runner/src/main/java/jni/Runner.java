@@ -43,7 +43,12 @@ public class Runner {
         driver.addSymbol('\n');
 //        driver.addSymbol((char) -1);// EOF
 
-LexerInput.tokenDict.put(1, "NO TOKEN");
+//        // add token dictionary
+        LexerInput.tokenDict.put(1, "NO TOKEN");
+        LexerInput.tokenDict.put(2, "NUMBER");
+        LexerInput.tokenDict.put(3, "WHITESPACE");
+        LexerInput.tokenDict.put(4, "IDENT");
+        LexerInput.tokenDict.put(99, "UNKNOWN");
 
 //        // add token dictionary
 //        LexerInput.tokenDict.put(2, "COMMENT");
@@ -155,10 +160,10 @@ LexerInput.tokenDict.put(1, "NO TOKEN");
         @Override
         public String execute(Lexer lexer) {
             // print the thread
-            System.out.println("["+ Thread.currentThread().getId() + "] LEX: " + symbol + " (" + (int) symbol + ")");
-            int token = lexer.lex(symbol);
-            System.out.println("["+ Thread.currentThread().getId() + "] TOKEN: " + token);
-            return tokenDict.getOrDefault(token, String.valueOf(token));
+            System.out.println("[" + Thread.currentThread().getId() + "] LEX: " + symbol + " (" + (int) symbol + ")");
+            Tokens token = lexer.lex(symbol);
+            System.out.println("[" + Thread.currentThread().getId() + "] TOKEN: " + token);
+            return token.toStringWithDict(tokenDict);
         }
 
         @Override
