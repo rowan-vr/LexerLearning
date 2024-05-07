@@ -26,21 +26,29 @@ import java.util.*;
 public class Runner {
 
     private static final double RESET_PROBABILITY = 0.05;
-    private static final int MAX_STEPS = 3;
+    private static final int MAX_STEPS = 10_000;
     private static final int RANDOM_SEED = 46_346_293;
 
     public static void main(String[] args) throws Exception {
         LexerDriver driver = new LexerDriver();
 
-//        for (char c = 32; c <= 126; c++) {
-//            driver.addSymbol(c);
-//        }
+
+        // not yet
+        for (char c = 32; c <= 126; c++) {
+            driver.addSymbol(c);
+        }
 //        driver.addSymbol('\n');
 
-        driver.addSymbol('a');
-        driver.addSymbol(' ');
-        driver.addSymbol('1');
-        driver.addSymbol('\n');
+        //works
+
+//        driver.addSymbol('a');
+//        driver.addSymbol(' ');
+//        driver.addSymbol('1');
+//        driver.addSymbol('\n');
+//        driver.addSymbol('\"');
+//driver.addSymbol('/');
+//driver.addSymbol('*');
+
 //        driver.addSymbol((char) -1);// EOF
 
 //        // add token dictionary
@@ -48,6 +56,8 @@ public class Runner {
         LexerInput.tokenDict.put(2, "NUMBER");
         LexerInput.tokenDict.put(3, "WHITESPACE");
         LexerInput.tokenDict.put(4, "IDENT");
+        LexerInput.tokenDict.put(5, "STRING");
+        LexerInput.tokenDict.put(6, "COMMENT");
         LexerInput.tokenDict.put(99, "UNKNOWN");
 
 //        // add token dictionary

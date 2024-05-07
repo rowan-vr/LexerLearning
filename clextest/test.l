@@ -35,6 +35,8 @@ enum Token {
 	NUMBER = 2,
 	WHITESPACE = 3,
 	IDENT = 4,
+	STRING = 5,
+	COMMENT = 6,
 	UNKNOWN = 99
 };
 struct Tokens {
@@ -324,11 +326,24 @@ int yywrap (yyscan_t yyscanner) {
 %option nounput
 %option always-interactive
 
+%x INCOMMENT INSTRING
+
 %%
 
-[1-9][0-9]* { return NUMBER; }
-[ \t]     { return WHITESPACE; }
-[a-z][a-zA-Z]* { return IDENT; }
+<INITIAL>"/*"      {  BEGIN(INCOMMENT) ; return COMMENT ; }
+<INCOMMENT>"*/"    {  BEGIN(INITIAL) ;  return COMMENT ;}
+<INCOMMENT>.|\n    { return COMMENT ; }
+
+ /* Switch to string mode on '"' */
+<INITIAL>\"      {  BEGIN(INSTRING) ;}
+<INSTRING>\\\"   { } /* Escaped quote. */
+<INSTRING>\"     {  BEGIN(INITIAL) ; return STRING ;}
+<INSTRING>.|\n   { }
+
+<INITIAL>[1-9][0-9]* { return NUMBER; }
+<INITIAL>[ \t]     { return WHITESPACE; }
+<INITIAL>[a-z][a-zA-Z]* { return IDENT; }
+
 <<EOF>> { return 0;}
 
 %%
